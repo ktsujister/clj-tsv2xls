@@ -1,0 +1,22 @@
+# tsv2xls
+
+tsv2xls: get tsv file as an input and create excel converted file.
+
+## Usage
+
+Usage:
+
+ Switches               Default  Desc
+ --------               -------  ----
+ -m, --mode             xlsx     specify mode.(xls|xlsx)
+ -n, --name             sheet    specify sheetname.
+ -i, --infile                    specify input file(TSV).
+ -o, --outfile                   specify output file.
+ -?, --no-help, --help  false    show help.
+
+
+## License
+
+Copyright (C) 2011 Kei Tsuji
+
+Distributed under the Eclipse Public License, the same as Clojure.

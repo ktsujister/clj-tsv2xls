@@ -12,7 +12,7 @@
   [{:keys [infile outfile mode name]}]
   (with-open [in-file (io/reader infile)
               out-stream (io/output-stream outfile)]
-    (let [records (csv/read-csv in-file :separator \tab)
+    (let [records (csv/read-csv in-file :separator \tab :quote \|)
           book (cond (= mode "xls") (HSSFWorkbook.)
                      (= mode "xlsx") (XSSFWorkbook.))
           sheet (.createSheet book)]

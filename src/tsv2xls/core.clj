@@ -4,7 +4,7 @@
             [clojure.data.csv :as csv]
             [clojure.java.io :as io])
   (:import [org.apache.poi.hssf.usermodel HSSFWorkbook]
-           [org.apache.poi.xssf.usermodel XSSFWorkbook])
+           [org.apache.poi.xssf.streaming SXSSFWorkbook])
   (:gen-class))
 
 (defn tsv-to-xls-convert
@@ -14,7 +14,7 @@
               out-stream (io/output-stream outfile)]
     (let [records (csv/read-csv in-file :separator \tab :quote \|)
           book (cond (= mode "xls") (HSSFWorkbook.)
-                     (= mode "xlsx") (XSSFWorkbook.))
+                     (= mode "xlsx") (SXSSFWorkbook. 100))
           sheet (.createSheet book)]
       (.setSheetName book 0 name)
       (doseq [[i row] (map vector (iterate inc 0) records)]

@@ -1,10 +1,10 @@
-(defproject tsv2xls "0.0.2-SNAPSHOT"
+(defproject tsv2xls "0.0.2"
   :description "create xls(or xlsx) file from tsv file."
   :dependencies [[org.clojure/clojure		"1.3.0"]
                  [org.clojure/tools.cli		"0.2.1"]
                  [org.clojure/data.csv		"0.1.0"]
                  [org.apache.poi/poi		"3.8-beta5"]
                  [org.apache.poi/poi-ooxml	"3.8-beta5"]]
-  :dev-dependencies [[swank-clojure		"1.3.3"]]
+  :dev-dependencies [[swank-clojure		"1.4.0"]]
   :jvm-opts ["-Dfile.encoding=utf-8"]
   :main tsv2xls.core)

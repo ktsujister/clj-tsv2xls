@@ -17,25 +17,38 @@
 
 (def max-sheet-name-length 31)
 
-(defn- get-sheet-name [file]
-  "get sheetname from input file."
-  (let [sheet-name-base (clojure.string/replace file #".*([^/]+)\.txt" "$1")]
-    (apply str (take max-sheet-name-length sheet-name-base))))
+(defn- drop-common-strings [strings]
+  (let [drop-count
+        (->> (apply map vector strings)
+             (take-while #(apply = %))
+             count)]
+    (map #(apply str (drop drop-count %)) strings)))
+
+(defn- get-sheet-names [files]
+  "get sheetnames from input files. handle duplicate names"
+  (let [base-names (map #(clojure.string/replace % #".*?([^/]+)\.txt" "$1") files)
+        get-trimmed-sheetname (fn [names] (map #(apply str (take max-sheet-name-length %)) names))
+        trimmed-base-names (get-trimmed-sheetname base-names)]
+    (if (apply distinct? trimmed-base-names)
+      trimmed-base-names
+      (get-trimmed-sheetname (drop-common-strings base-names)))))
 
 (defn tsv-to-xls-convert
   "get tsv file as an input and create excel converted file."
   [{:keys [outfile format files encoding] :as options}]
-  (let [outfile (get-output-file options)]
+  (let [outfile (get-output-file options)
+        format (if (seq format) format "xlsx")]
     (with-open [out-stream (io/output-stream outfile)]
       (let [book (case format
                    "xls" (HSSFWorkbook.)
-                   "xlsx" (SXSSFWorkbook. 100))]
+                   "xlsx" (SXSSFWorkbook. 100))
+            sheet-names (get-sheet-names files)]
         (doseq [[i file] (map-indexed vector files)]
           (let [reader (if (seq encoding) (io/reader file :encoding encoding)
                            (io/reader file))
                 records (csv/read-csv reader :separator \tab :quote \|)
                 sheet (.createSheet book)
-                sheet-name (get-sheet-name file)]
+                sheet-name (nth sheet-names i)]
             (.setSheetName book i sheet-name)
             (doseq [[r row] (map-indexed vector records)]
               (let [hssf-row (.createRow sheet r)]

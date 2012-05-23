@@ -1,4 +1,4 @@
-(defproject tsv2xls "0.0.2"
+(defproject tsv2xls "0.0.3"
   :description "create xls(or xlsx) file from tsv file."
   :dependencies [[org.clojure/clojure		"1.3.0"]
                  [org.clojure/tools.cli		"0.2.1"]

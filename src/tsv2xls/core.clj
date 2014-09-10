@@ -11,8 +11,9 @@
   "get output filename from options."
   [{:keys [files outfile format] :as options}]
   {:pre [(seq format) (or files outfile)]}
-  (if (seq outfile) outfile
-      (clojure.string/replace (first files) #"(.+)\.txt" (str "$1." format))))
+  (if (seq outfile)
+    outfile
+    (clojure.string/replace (first files) #"(.+)\.(?:txt|tsv)" (str "$1." format))))
 
 (def max-sheet-name-length 31)
 
@@ -25,7 +26,7 @@
 
 (defn- get-sheet-names [files]
   "get sheetnames from input files. handle duplicate names"
-  (let [base-names (map #(clojure.string/replace % #".*?([^/]+)\.txt" "$1") files)
+  (let [base-names (map #(clojure.string/replace % #".*?([^/]+)\.(?:txt|tsv)$" "$1") files)
         get-trimmed-sheetname (fn [names] (map #(apply str (take max-sheet-name-length %)) names))
         trimmed-base-names (get-trimmed-sheetname base-names)]
     (if (apply distinct? trimmed-base-names)
@@ -43,8 +44,9 @@
                    "xlsx" (SXSSFWorkbook. 100))
             sheet-names (get-sheet-names files)]
         (doseq [[i file] (map-indexed vector files)]
-          (let [reader (if (seq encoding) (io/reader file :encoding encoding)
-                           (io/reader file))
+          (let [reader (if (seq encoding)
+                         (io/reader file :encoding encoding)
+                         (io/reader file))
                 records (csv/read-csv reader :separator \tab :quote \|)
                 sheet (.createSheet book)
                 sheet-name (nth sheet-names i)]
@@ -69,6 +71,6 @@
      help (println summary)
      errors (println (clojure.string/join \newline errors))
      :else
-     (try (tsv-to-xls-convert (assoc options :files rest))
+     (try (tsv-to-xls-convert (assoc options :files arguments))
           (catch Exception ex (do (print-stack-trace ex)
                                   (throw ex)))))))

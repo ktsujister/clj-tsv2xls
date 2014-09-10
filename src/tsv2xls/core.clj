@@ -1,11 +1,10 @@
 (ns tsv2xls.core
-  (:use clojure.pprint
-	clojure.stacktrace)
-  (:require [clojure.tools.cli :as cli]
-            [clojure.data.csv :as csv]
-            [clojure.java.io :as io])
-  (:import [org.apache.poi.hssf.usermodel HSSFWorkbook]
-           [org.apache.poi.xssf.streaming SXSSFWorkbook])
+  (:require [clojure.data.csv :as csv]
+            [clojure.java.io :as io]
+            [clojure.stacktrace :refer [print-stack-trace]]
+            [clojure.tools.cli :as cli])
+  (:import (org.apache.poi.hssf.usermodel HSSFWorkbook)
+           (org.apache.poi.xssf.streaming SXSSFWorkbook))
   (:gen-class))
 
 (defn- get-output-file
@@ -58,15 +57,18 @@
         (.write book out-stream)))))
 
 (defn -main [& args]
-  (let [[options rest banner]
-        (cli/cli args
-                 ["-o" "--outfile" "specify output file."]
-                 ["-f" "--format" "specify output format.(xls|xlsx)" :default "xlsx"]
-                 ["-e" "--encoding" "specify encoding."]
-                 ["-?" "--help" "show help." :default false :flag true])]
-    (let [{:keys [help]} options]
-      (cond
-       help (println banner)
-       :else
-       (try (tsv-to-xls-convert (assoc options :files rest))
-            (catch Exception ex (print-stack-trace ex)))))))
+  (let [{:keys [options arguments errors summary]}
+        (cli/parse-opts
+         args
+         [["-o" "--outfile out"  "specify output file."]
+          ["-f" "--format  fmt"  "specify output format.(xls|xlsx)" :default "xlsx"]
+          ["-e" "--encoding enc" "specify encoding."]
+          ["-?" "--help"         "show help."]])
+        {:keys [help]} options]
+    (cond
+     help (println summary)
+     errors (println (clojure.string/join \newline errors))
+     :else
+     (try (tsv-to-xls-convert (assoc options :files rest))
+          (catch Exception ex (do (print-stack-trace ex)
+                                  (throw ex)))))))

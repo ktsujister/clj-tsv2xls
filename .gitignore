@@ -7,3 +7,5 @@ pom.xml
 *.xls
 *.xlsx
 /type-lists
+/target
+/.nrepl-port

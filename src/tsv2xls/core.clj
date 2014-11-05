@@ -1,6 +1,5 @@
 (ns tsv2xls.core
-  (:require [clojure.data.csv :as csv]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
             [clojure.stacktrace :refer [print-stack-trace]]
             [clojure.tools.cli :as cli])
   (:import (org.apache.poi.hssf.usermodel HSSFWorkbook)
@@ -44,10 +43,12 @@
                    "xlsx" (SXSSFWorkbook. 100))
             sheet-names (get-sheet-names files)]
         (doseq [[i file] (map-indexed vector files)]
-          (let [reader (if (seq encoding)
-                         (io/reader file :encoding encoding)
-                         (io/reader file))
-                records (csv/read-csv reader :separator \tab :quote \|)
+          (let [records (->> (if (seq encoding)
+                               (io/reader file :encoding encoding)
+                               (io/reader file))
+                             line-seq
+                             (map (fn [line]
+                                    (clojure.string/split line #"\t" -1))))
                 sheet (.createSheet book)
                 sheet-name (nth sheet-names i)]
             (.setSheetName book i sheet-name)

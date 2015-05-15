@@ -42,22 +42,25 @@
                    "xls" (HSSFWorkbook.)
                    "xlsx" (SXSSFWorkbook. 100))
             sheet-names (get-sheet-names files)]
-        (doseq [[i file] (map-indexed vector files)]
-          (let [records (->> (if (seq encoding)
-                               (io/reader file :encoding encoding)
-                               (io/reader file))
-                             line-seq
-                             (map (fn [line]
-                                    (clojure.string/split line #"\t" -1))))
-                sheet (.createSheet book)
-                sheet-name (nth sheet-names i)]
-            (.setSheetName book i sheet-name)
-            (doseq [[r row] (map-indexed vector records)]
-              (let [hssf-row (.createRow sheet r)]
-                (doseq [[c cell] (map-indexed vector row)]
-                  (let [hssf-cell (.createCell hssf-row c)]
-                    (.setCellValue hssf-cell cell)))))))
-        (.write book out-stream)))))
+        (try
+          (doseq [[i file] (map-indexed vector files)]
+            (let [records (->> (if (seq encoding)
+                                 (io/reader file :encoding encoding)
+                                 (io/reader file))
+                               line-seq
+                               (map (fn [line]
+                                      (clojure.string/split line #"\t" -1))))
+                  sheet (.createSheet book)
+                  sheet-name (nth sheet-names i)]
+              (.setSheetName book i sheet-name)
+              (doseq [[r row] (map-indexed vector records)]
+                (let [hssf-row (.createRow sheet r)]
+                  (doseq [[c cell] (map-indexed vector row)]
+                    (let [hssf-cell (.createCell hssf-row c)]
+                      (.setCellValue hssf-cell cell)))))))
+          (.write book out-stream)
+          (finally
+            (.dispose book)))))))
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]}
